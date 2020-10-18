@@ -1,0 +1,68 @@
+Sub getemails()
+
+    Sheets(1).Select
+    Cells.ClearComments
+    
+    Const MailServerPop3 = 0
+    Const MailServerlmap4 = 1
+    
+    Dim nServer As New EAGetMailObjLib.MailServer
+    mServer.Server = "pop.naver.com"
+    mServer.User = "ynm2014@naver.com"
+    mServer.Password = "rladudals03*"
+    mServer.Protocol = MailServerPop3
+    mServer.SSLConnection = True
+    mServer.Port = 995
+    
+    Sheets(1).Select
+    Cells(1, 1).Value = "보낸사람"
+    Cells(1, 2).Value = "제목"
+    Cells(1, 3).Value = "내용"
+    Cells(1, 4).Value = "보낸 시간"
+    Cells(1, 5).Value = "크기"
+
+    On Error GoTo ErrorHandle:
+    Dim mClient As New EAGetMailObjLib.MailClient
+    mClient.LicenseCode = "Trylt"
+    mClient.Connect nServer
+    MsgBox "Connected to server"
+    
+    
+    Dim infos
+    infos = mClient.GetMailInfos()
+    MsgBox UBound(infos) + 1 & " emails"
+    
+    Dim i As Integer
+    i = 1
+    For i = LBound(infos) To UBound(infos)
+        Dim info As EAGetMailObjLib.MailInfo
+        
+        Set info = infos(1)
+        
+        Dim mail As EAGetMailObjLib.mail
+        Set mail = mClient.GetMail(info)
+        Dim fromAddr, subject, emailBody, txtBody As String
+        Dim recDate As Variant
+        
+        fromAddr = mail.from.Address
+        fromAddr = mail.from.Name
+        subject = mail.subject
+        emailBody = mail.HtmlBody
+        txtBody = mail.TextBody
+        recDate = mail.ReceivedDate
+        
+        Sheets(1).Select
+        Cells(i + 2, 1).Value = fromAddr
+        Cells(i + 2, 2).Value = subject
+        Cells(i + 2, 3).Value = txtBody
+        Cells(i + 2, 4).Value = recDate
+        Cells(i + 2, 5).Value = info.Size
+        
+    Next
+    mClient.Quit
+    Exit Sub
+
+ErrorHandle:
+    MsgBox Err.Description
+    
+End Sub
